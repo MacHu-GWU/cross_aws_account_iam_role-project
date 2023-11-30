@@ -3,7 +3,7 @@
 """
 Usage::
 
-    import cross_aws_account_iam_role as x_aws_acc
+    import cross_aws_account_iam_role.api as x_aws_acc
 """
 
 from .impl import IamRootArn

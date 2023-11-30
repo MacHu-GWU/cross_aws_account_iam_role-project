@@ -1,61 +1,37 @@
-# comprehensive github action yml reference: https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+# This is an advanced workflow to show you how to use GitHub open id to authenticate with AWS
+# ref: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+name: test_cross_aws_account_iam_role
 
----
-name: CI
-
+# Controls when the action will run.
 on:
-  push: # any push event to master will trigger this
-    branches: ["main"]
-  pull_request: # any pull request to master will trigger this
-    branches: ["main"]
-  workflow_dispatch: # allows you to manually trigger run
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
+env:
+  AWS_REGION: "us-east-1"
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  tests:
-    name: "${{ matrix.os }} Python ${{ matrix.python-version }}"
-    runs-on: "${{ matrix.os }}" # for all available VM runtime, see this: https://docs.github.com/en/free-pro-team@latest/actions/reference/specifications-for-github-hosted-runners
-    env: # define environment variables
-      USING_COVERAGE: "3.7,3.8,3.9,3.10,3.11"
-    strategy:
-      matrix:
-#        os: ["ubuntu-latest", "windows-latest"]
-        os: ["ubuntu-latest", ] # for debug only
-#        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
-        python-version: ["3.7", ] # for debug only
-        exclude:
-          - os: windows-latest # this is a useless exclude rules for demonstration use only
-            python-version: 2.7
+  test_github_open_id_for_aws:
+    runs-on: ubuntu-latest
     steps:
-      - uses: "actions/checkout@v3" # https://github.com/marketplace/actions/checkout
-      - uses: "actions/setup-python@v4" # https://github.com/marketplace/actions/setup-python
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          python-version: "${{ matrix.python-version }}"
-
-      - if: matrix.os == 'ubuntu-latest' # for condition steps, you should put if at begin, and use single quote for logical expression
-        name: "Install dependencies on MacOS or Linux"
-        run: |
-          set -xe
-          python -VV
-          python -m site
-          python -m pip install --upgrade pip setuptools wheel virtualenv
-          pip install -r requirements.txt
-          pip install -r requirements-test.txt
-          pip install .
-      - if: matrix.os == 'windows-latest'
-        name: "Install dependencies on Windows"
-        run: |
-          python -m site
-          python -m pip install --upgrade pip setuptools wheel virtualenv
-          pip install -r requirements.txt
-          pip install -r requirements-test.txt
-          pip install .
-      - name: "Run pytest"
-
-        run: "python -m pytest tests --cov=cross_aws_account_iam_role"
-      # don't forget to goto codecov.io, enable your repo, copy the token
-      # create an CODECOV_TOKEN env var in GitHub actions secret
-      - name: "Upload coverage to Codecov"
-        if: "contains(env.USING_COVERAGE, matrix.python-version)"
-        uses: "codecov/codecov-action@v3" # https://github.com/marketplace/actions/codecov-action
+          # AWS account ID are considered as not-sensitive, but nice to have it as a secret
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-github-open-id-connection
+          role-session-name: sample_role_session
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          fail_ci_if_error: true
+          python-version: '3.9'
+      - name: Test the current aws session
+        run: |
+          pip install boto3
+          python test_cross_aws_account_iam_role.py
