@@ -34,7 +34,10 @@ owner_1 = x_aws_acc.Owner(
         "Statement": [
             {
                 "Effect": "Allow",
-                "Action": "sts:GetCallerIdentity",
+                "Action": [
+                    "iam:ListAccountAliases",
+                    "sts:GetCallerIdentity",
+                ],
                 "Resource": "*"
             },
         ],

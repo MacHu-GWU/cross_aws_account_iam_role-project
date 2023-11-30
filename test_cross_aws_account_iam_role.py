@@ -37,10 +37,11 @@ owner_1.grant(grantee_1)
 
 
 def call_api(bsm: BotoSesManager):
-    account_id, account_alias, arn = x_aws_acc.get_account_info(bsm)
-    print(
-        f"    now we are on account {account_id} ({account_alias}), using principal {arn}"
-    )
+    res = bsm.sts_client.get_caller_identity()
+    parts = res["Arn"].split(":")
+    parts[4] = parts[4][:2] + "********" + parts[4][-2:]
+    arn = ":".join(parts)
+    print(f"    now we are  using principal {arn}")
 
 
 x_aws_acc.validate(
