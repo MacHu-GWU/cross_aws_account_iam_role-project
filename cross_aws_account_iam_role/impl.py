@@ -18,7 +18,6 @@ Requirements:
 - Dependencies::
 
     # content of requirements.txt
-    boto3
     cached-property>=1.5.2; python_version < '3.8'
     boto_session_manager>=1.5.2,<2.0.0
     aws_cloudformation>=1.5.1,<2.0.0
@@ -74,13 +73,6 @@ class _IamNamedArn(_IamArn):
 
 
 @dataclasses.dataclass
-class IamGroupArn(_IamNamedArn):
-    @property
-    def arn(self) -> str:
-        return self._make_arn("group")
-
-
-@dataclasses.dataclass
 class IamUserArn(_IamNamedArn):
     @property
     def arn(self) -> str:
@@ -101,9 +93,7 @@ class IamPolicyArn(_IamNamedArn):
         return self._make_arn("policy")
 
 
-T_GRANTEE_ARN = T.Union[IamRootArn, IamGroupArn, IamUserArn, IamRoleArn]
-T_IAM_ARN = T.Union[IamRootArn, IamGroupArn, IamUserArn, IamRoleArn, IamPolicyArn]
-
+T_GRANTEE_ARN = T.Union[IamRootArn, IamUserArn, IamRoleArn]
 
 # ------------------------------------------------------------------------------
 # Grantee and Owner data models
@@ -117,13 +107,11 @@ class AwsContext:
     bsm: BotoSesManager = dataclasses.field()
 
 
-def get_managed_policy_property_name(iam_arn: T_IAM_ARN) -> str:
+def get_managed_policy_property_name(iam_arn: T.Union[IamUserArn, IamRoleArn]) -> str:
     """
     Get the CloudFormation IamManagedPolicy property name for the given IAM ARN.
     """
-    if isinstance(iam_arn, IamGroupArn):
-        return "Groups"
-    elif isinstance(iam_arn, IamRoleArn):
+    if isinstance(iam_arn, IamRoleArn):
         return "Roles"
     elif isinstance(iam_arn, IamUserArn):
         return "Users"
@@ -141,7 +129,8 @@ class Grantee(AwsContext):
     :param stack_name: cloudformation stack name to set up necessary resource
         for this grantee.
     :param iam_arn: the IAM ARN object of this grantee, could be one of
-        :class:`IamRootArn`, :class:`IamGroupArn`, :class:`IamUserArn`, :class:`IamRoleArn`.
+        :class:`IamRootArn`, :class:`IamUserArn`, :class:`IamRoleArn`.
+        IAM Group cannot be a grantee.
     :param policy_name: the name of the IAM policy to attach to the grantee,
         which allows the grantee to assume the owner's IAM role.
     :param test_bsm: optional, the boto session manager represents the grantee
@@ -405,6 +394,12 @@ def deploy(
                 on_failure_delete=True,
                 verbose=verbose,
             )
+
+
+# def mask():
+#     parts = res["Arn"].split(":")
+#     parts[4] = parts[4][:2] + "********" + parts[4][-2:]
+#     arn = ":".join(parts)
 
 
 def get_account_info(bsm: BotoSesManager) -> T.Tuple[str, str, str]:

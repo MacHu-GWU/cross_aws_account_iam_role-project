@@ -13,6 +13,7 @@ prefix = "a1b2-"
 grantee_1_bsm = BotoSesManager(profile_name="bmt_app_dev_us_east_1")
 iam_role_arn = x_aws_acc.IamRoleArn(
     account=grantee_1_bsm.aws_account_id,
+    # this role is defined in https://github.com/MacHu-GWU/gh_action_open_id_in_aws-project/blob/main/example/setup_cross_aws_account_iam_role_project.py
     name="cross-aws-account-iam-role-github-oidc",
 )
 grantee_1 = x_aws_acc.Grantee(

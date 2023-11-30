@@ -1,5 +1,14 @@
-# This is an advanced workflow to show you how to use GitHub open id to authenticate with AWS
-# ref: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+# The ``example/use_iam_role_in_ci.py`` script setup necessary AWS IAM resources
+# to allow the ``cross-aws-account-iam-role-github-oidc``
+# GitHub action open id connect IAM role to assume different roles
+# on dev, test, prod three AWS accounts. This GitHub action workflow tests
+# the GitHub action IAM permission on those three accounts
+#
+# GitHub Action secrets:
+# - AWS_ACCOUNT_ID: devops AWS account id, which is where the ``cross-aws-account-iam-role-github-oidc`` locate at
+# - DEV_AWS_ACCOUNT_ID: dev AWS account id
+# - TEST_AWS_ACCOUNT_ID: test AWS account id
+# - PROD_AWS_ACCOUNT_ID: prod AWS account id
 name: test_cross_aws_account_iam_role
 
 # Controls when the action will run.

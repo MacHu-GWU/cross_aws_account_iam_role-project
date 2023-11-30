@@ -4,56 +4,29 @@
 This script tests the capability of giving a IAM role access to other AWS accounts.
 """
 
-import json
-import botocore.exceptions
 from boto_session_manager import BotoSesManager
 import cross_aws_account_iam_role.api as x_aws_acc
 
 prefix = "a1b2-"
 
 grantee_1_bsm = BotoSesManager(profile_name="bmt_app_dev_us_east_1")
-grantee_1_role_name = "cross_aws_account_iam_role_iam_principal"
-try:
-    grantee_1_bsm.iam_client.create_role(
-        RoleName=grantee_1_role_name,
-        AssumeRolePolicyDocument=json.dumps(
-            {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Principal": {
-                            "AWS": f"arn:aws:iam::{grantee_1_bsm.aws_account_id}:user/sanhe"
-                        },
-                        "Action": "sts:AssumeRole",
-                    }
-                ],
-            }
-        ),
-    )
-except botocore.exceptions.ClientError as e:
-    if e.response["Error"]["Code"] == "EntityAlreadyExists":
-        pass
-    else:
-        raise e
-
-iam_role_arn = x_aws_acc.IamRoleArn(
+iam_user_arn = x_aws_acc.IamUserArn(
     account=grantee_1_bsm.aws_account_id,
-    name=grantee_1_role_name,
+    name="sanhe",  # this IAM user's AWS profile is bmt_app_dev_us_east_1
 )
 grantee_1 = x_aws_acc.Grantee(
     bsm=grantee_1_bsm,
-    stack_name=f"{prefix}cross-aws-account-iam-role-iam-principal-grantee",
-    iam_arn=iam_role_arn,
-    policy_name=f"{prefix}cross_aws_account_iam_role_iam_principal_grantee",
+    stack_name=f"{prefix}cross-aws-account-iam-role-iam-user-principal-grantee",
+    iam_arn=iam_user_arn,
+    policy_name=f"{prefix}cross_aws_account_iam_role_iam_user_principal_grantee",
 )
 
 owner_1_bsm = BotoSesManager(profile_name="bmt_app_test_us_east_1")
 owner_1 = x_aws_acc.Owner(
     bsm=owner_1_bsm,
-    stack_name=f"{prefix}cross-aws-account-iam-role-iam-principal-test-owner",
-    role_name=f"{prefix}cross_aws_account_iam_role_iam_principal_test_owner",
-    policy_name=f"{prefix}cross_aws_account_iam_role_iam_principal_test_owner",
+    stack_name=f"{prefix}cross-aws-account-iam-role-iam-user-principal-test-owner",
+    role_name=f"{prefix}cross_aws_account_iam_role_iam_user_principal_test_owner",
+    policy_name=f"{prefix}cross_aws_account_iam_role_iam_user_principal_test_owner",
     policy_document={
         "Version": "2012-10-17",
         "Statement": [
@@ -88,13 +61,7 @@ def call_api(bsm: BotoSesManager):
 
 
 def validate():
-    grantee_1.test_bsm = grantee_1_bsm.assume_role(
-        role_arn=x_aws_acc.IamRoleArn(
-            account=grantee_1_bsm.aws_account_id,
-            name=grantee_1_role_name,
-        ).arn,
-        role_session_name="sample_role_session",
-    )
+    grantee_1.test_bsm = grantee_1_bsm
     print("at begin:")
     call_api(grantee_1.test_bsm)
     print("validate cross account permission ...")
