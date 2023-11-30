@@ -86,32 +86,12 @@ class IamUserArn(_IamNamedArn):
     def arn(self) -> str:
         return self._make_arn("user")
 
-    def attach_policy(
-        self,
-        iam_client: "IAMClient",
-        iam_policy_arn: str,
-    ):
-        iam_client.attach_user_policy(
-            UserName=self.name,
-            PolicyArn=iam_policy_arn,
-        )
-
 
 @dataclasses.dataclass
 class IamRoleArn(_IamNamedArn):
     @property
     def arn(self) -> str:
         return self._make_arn("role")
-
-    def attach_policy(
-        self,
-        iam_client: "IAMClient",
-        iam_policy_arn: str,
-    ):
-        iam_client.attach_role_policy(
-            RoleName=self.name,
-            PolicyArn=iam_policy_arn,
-        )
 
 
 @dataclasses.dataclass
@@ -473,7 +453,8 @@ def validate(
                 f"using principal {arn}"
             )
         for owner in grantee._owners.values():
-            print(f"  Try to assume role {owner.role_arn} on owner account ...")
+            if verbose:
+                print(f"  Try to assume role {owner.role_arn} on owner account ...")
             bsm_new = grantee.test_bsm.assume_role(role_arn=owner.role_arn)
             call_api(bsm_new)
 
