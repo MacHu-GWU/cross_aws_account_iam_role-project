@@ -6,13 +6,14 @@ from cross_aws_account_iam_role import api
 def test():
     _ = api
     _ = api.IamRootArn
-    _ = api.IamGroupArn
     _ = api.IamUserArn
     _ = api.IamRoleArn
     _ = api.T_GRANTEE_ARN
     _ = api.Grantee
     _ = api.Owner
     _ = api.deploy
+    _ = api.mask_aws_account_id
+    _ = api.mask_iam_principal_arn
     _ = api.get_account_info
     _ = api.print_account_info
     _ = api.validate

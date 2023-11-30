@@ -396,13 +396,27 @@ def deploy(
             )
 
 
-# def mask():
-#     parts = res["Arn"].split(":")
-#     parts[4] = parts[4][:2] + "********" + parts[4][-2:]
-#     arn = ":".join(parts)
+def mask_aws_account_id(aws_account_id: str) -> str:
+    """
+    Example:
+
+        >>> mask_aws_account_id("123456789012")
+        '12*********12'
+    """
+    return aws_account_id[4][:2] + "*" * 8 + aws_account_id[4][-2:]
 
 
-def get_account_info(bsm: BotoSesManager) -> T.Tuple[str, str, str]:
+def mask_iam_principal_arn(arn: str) -> str:
+    parts = arn.split(":")
+    parts[4] = mask_aws_account_id(parts[4])
+    masked_arn = ":".join(parts)
+    return masked_arn
+
+
+def get_account_info(
+    bsm: BotoSesManager,
+    masked_aws_account_id: bool = True,
+) -> T.Tuple[str, str, str]:
     """
     Get the account ID, account alias and ARN of the given boto session.
     """
@@ -411,14 +425,20 @@ def get_account_info(bsm: BotoSesManager) -> T.Tuple[str, str, str]:
     arn = res["Arn"]
     res = bsm.iam_client.list_account_aliases()
     account_alias = res.get("AccountAliases", ["unknown-account-alias"])[0]
+    if masked_aws_account_id:
+        account_id = mask_aws_account_id(account_id)
+        arn = mask_iam_principal_arn(arn)
     return account_id, account_alias, arn
 
 
-def print_account_info(bsm: BotoSesManager):
+def print_account_info(
+    bsm: BotoSesManager,
+    masked_aws_account_id: bool = True,
+):
     """
     Display the account ID, account alias and ARN of the given boto session.
     """
-    account_id, account_alias, arn = get_account_info(bsm)
+    account_id, account_alias, arn = get_account_info(bsm, masked_aws_account_id)
     print(
         f"now we are on account {account_id} ({account_alias}), using principal {arn}"
     )
@@ -465,8 +485,6 @@ def delete(
 
     :param grantee_list: The list of :class:`Grantee`.
     :param owner_list: The list of :class:`Owner`.
-    :param deploy_name: this name will be used as part of the cloudformation stack
-        naming convention.
     :param skip_prompt: default True; if False, you have to enter "Yes"
         in prompt to do deployment; if True, then execute the deployment directly.
     :param verbose: Whether to print verbose information.
@@ -490,171 +508,3 @@ def delete(
             timeout=60,
             verbose=verbose,
         )
-
-
-if __name__ == "__main__":
-    # --------------------------------------------------------------------------
-    # Example 1. grantee are IAM account
-    # --------------------------------------------------------------------------
-    prefix = "a1b2-"
-
-    grantee_1_bsm = BotoSesManager(profile_name="bmt_app_dev_us_east_1")
-    grantee_1 = Grantee(
-        bsm=grantee_1_bsm,
-        stack_name=f"{prefix}cross-account-deployer",
-        iam_arn=IamRootArn(account=grantee_1_bsm.aws_account_id),
-        policy_name=f"{prefix}cross_account_deployer_policy",
-        test_bsm=grantee_1_bsm,
-    )
-
-    owner_1_bsm = BotoSesManager(profile_name="bmt_app_prod_us_east_1")
-    owner_1 = Owner(
-        bsm=owner_1_bsm,
-        stack_name=f"{prefix}production-account-deployer",
-        role_name=f"{prefix}production_account_deployer_role",
-        policy_name=f"{prefix}production_account_deployer_policy",
-        policy_document={
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": "*",
-                    "Resource": "*",
-                },
-            ],
-        },
-    )
-
-    owner_1.grant(grantee_1)
-
-    deploy(
-        grantee_list=[grantee_1],
-        owner_list=[owner_1],
-    )
-
-    def call_api(bsm: BotoSesManager):
-        account_id, account_alias, arn = get_account_info(bsm)
-        print(
-            f"    now we are on account {account_id} ({account_alias}), using principal {arn}"
-        )
-
-    validate(
-        grantee_list=[grantee_1],
-        call_api=call_api,
-    )
-
-    # delete(
-    #     grantee_list=[grantee_1],
-    #     owner_list=[owner_1],
-    # )
-
-    # --------------------------------------------------------------------------
-    # Example 2. grantee are IAM User
-    # --------------------------------------------------------------------------
-    # prefix = "a1b2-"
-    #
-    # grantee_1_bsm = BotoSesManager(profile_name="bmt_app_dev_us_east_1")
-    # grantee_1 = Grantee(
-    #     bsm=grantee_1_bsm,
-    #     stack_name=f"{prefix}cross-account-deployer",
-    #     iam_arn=IamUserArn(account=grantee_1_bsm.aws_account_id, name="sanhe"),
-    #     policy_name=f"{prefix}cross_account_deployer_policy",
-    #     test_bsm=grantee_1_bsm,
-    # )
-    #
-    # owner_1_bsm = BotoSesManager(profile_name="bmt_app_prod_us_east_1")
-    # owner_1 = Owner(
-    #     bsm=owner_1_bsm,
-    #     stack_name=f"{prefix}production-account-deployer",
-    #     role_name=f"{prefix}production_account_deployer_role",
-    #     policy_name=f"{prefix}production_account_deployer_policy",
-    #     policy_document={
-    #         "Version": "2012-10-17",
-    #         "Statement": [
-    #             {
-    #                 "Effect": "Allow",
-    #                 "Action": "*",
-    #                 "Resource": "*",
-    #             },
-    #         ],
-    #     },
-    # )
-    #
-    # owner_1.grant(grantee_1)
-    #
-    # deploy(
-    #     grantee_list=[grantee_1],
-    #     owner_list=[owner_1],
-    # )
-    #
-    # def call_api(bsm: BotoSesManager):
-    #     account_id, account_alias, arn = get_account_info(bsm)
-    #     print(
-    #         f"    now we are on account {account_id} ({account_alias}), using principal {arn}"
-    #     )
-    #
-    # validate(
-    #     grantee_list=[grantee_1],
-    #     call_api=call_api,
-    # )
-    #
-    # delete(
-    #     grantee_list=[grantee_1],
-    #     owner_list=[owner_1],
-    # )
-
-    # --------------------------------------------------------------------------
-    # Example 3. grantee are IAM Role
-    # --------------------------------------------------------------------------
-    # prefix = "a1b2-"
-    #
-    # grantee_1_bsm = BotoSesManager(profile_name="bmt_app_dev_us_east_1")
-    # iam_role_arn = IamRoleArn(account=grantee_1_bsm.aws_account_id, name="project-boto_session_manager")
-    # grantee_1 = Grantee(
-    #     bsm=grantee_1_bsm,
-    #     stack_name=f"{prefix}cross-account-deployer",
-    #     iam_arn=iam_role_arn,
-    #     policy_name=f"{prefix}cross_account_deployer_policy",
-    #     test_bsm=grantee_1_bsm.assume_role(role_arn=iam_role_arn.arn),
-    # )
-    #
-    # owner_1_bsm = BotoSesManager(profile_name="bmt_app_prod_us_east_1")
-    # owner_1 = Owner(
-    #     bsm=owner_1_bsm,
-    #     stack_name=f"{prefix}production-account-deployer",
-    #     role_name=f"{prefix}production_account_deployer_role",
-    #     policy_name=f"{prefix}production_account_deployer_policy",
-    #     policy_document={
-    #         "Version": "2012-10-17",
-    #         "Statement": [
-    #             {
-    #                 "Effect": "Allow",
-    #                 "Action": "*",
-    #                 "Resource": "*",
-    #             },
-    #         ],
-    #     },
-    # )
-    #
-    # owner_1.grant(grantee_1)
-    #
-    # deploy(
-    #     grantee_list=[grantee_1],
-    #     owner_list=[owner_1],
-    # )
-    #
-    # def call_api(bsm: BotoSesManager):
-    #     account_id, account_alias, arn = get_account_info(bsm)
-    #     print(
-    #         f"    now we are on account {account_id} ({account_alias}), using principal {arn}"
-    #     )
-    #
-    # validate(
-    #     grantee_list=[grantee_1],
-    #     call_api=call_api,
-    # )
-    #
-    # delete(
-    #     grantee_list=[grantee_1],
-    #     owner_list=[owner_1],
-    # )
