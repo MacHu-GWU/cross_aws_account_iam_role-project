@@ -48,11 +48,14 @@ def call_api(bsm: BotoSesManager):
     parts = res["Arn"].split(":")
     parts[4] = parts[4][:2] + "********" + parts[4][-2:]
     arn = ":".join(parts)
-    print(f"    now we are  using principal {arn}")
+    print(f"    now we are using principal {arn}")
 
 
 def validate():
     grantee_1.test_bsm = bsm
+    print("at begin:")
+    call_api(bsm)
+    print("validate cross account permission ...")
     x_aws_acc.validate(
         grantee_list=[grantee_1],
         call_api=call_api,
