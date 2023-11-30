@@ -24,14 +24,27 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v3
         with:
           # AWS account ID are considered as not-sensitive, but nice to have it as a secret
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-github-open-id-connection
+          role-to-assume: arn:aws:iam::${{ secrets.DEV_AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-github-open-id-connection
           role-session-name: sample_role_session
           aws-region: ${{ env.AWS_REGION }}
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-      - name: Test the current aws session
+      - name: Git clone the repository
         run: |
-          pip install -r requirements.txt
-          python test_cross_aws_account_iam_role.py
+          aws sts get-caller-identity
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          # AWS account ID are considered as not-sensitive, but nice to have it as a secret
+          role-to-assume: arn:aws:iam::${{ secrets.TEST_AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-github-open-id-connection
+          role-session-name: sample_role_session
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Git clone the repository
+        run: |
+          aws sts get-caller-identity
+#      - name: Setup Python
+#        uses: actions/setup-python@v4
+#        with:
+#          python-version: '3.9'
+#      - name: Test the current aws session
+#        run: |
+#          pip install -r requirements.txt
+#          python test_cross_aws_account_iam_role.py
