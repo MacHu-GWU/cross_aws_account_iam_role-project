@@ -18,6 +18,7 @@ on:
 
 env:
   AWS_REGION: "us-east-1"
+
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
@@ -29,20 +30,20 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
-      - name: Setup Python
+      - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: Install dependencies
+      - name: 💾 Install dependencies
         run: |
           pip install -r requirements.txt
-      - name: Configure AWS credentials
+      - name: 🔐 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-github-oidc
           role-session-name: sample_role_session
           aws-region: ${{ env.AWS_REGION }}
-      - name: Test Cross Account IAM permission
+      - name: 🧪 Test Cross Account IAM permission
         env:
           DEV_AWS_ACCOUNT_ID: ${{ secrets.DEV_AWS_ACCOUNT_ID }}
           TEST_AWS_ACCOUNT_ID: ${{ secrets.TEST_AWS_ACCOUNT_ID }}
