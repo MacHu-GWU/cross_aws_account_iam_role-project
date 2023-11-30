@@ -50,7 +50,17 @@
 
 Welcome to ``cross_aws_account_iam_role`` Documentation
 ==============================================================================
-Documentation for ``cross_aws_account_iam_role``.
+.. image:: https://github.com/MacHu-GWU/cross_aws_account_iam_role-project/assets/6800411/5feed272-4d59-49b1-9e19-a6e465e88128
+
+The best practice to setup AWS Account is using IAM assumed roles. You can grant an AWS Account (IAM root), an IAM User or an IAM Role to assume an IAM Role in another AWS Account. This is the most secure way to access AWS resources across AWS Accounts.
+
+.. image:: https://github.com/MacHu-GWU/cross_aws_account_iam_role-project/assets/6800411/598966ae-36ec-436a-a88e-c3e3135e7cc5
+
+This Python tool can setup / modify / cleanup cross AWS account IAM permission at scale. See usage example below:
+
+- `Grant IAM Root (entire AWS account) cross account IAM permission <https://github.com/MacHu-GWU/cross_aws_account_iam_role-project/blob/main/example/use_iam_root_on_laptop.py>`_
+- `Grant IAM User cross account IAM permission <https://github.com/MacHu-GWU/cross_aws_account_iam_role-project/blob/main/example/use_iam_user_on_laptop.py>`_
+- `Grant IAM Role cross account IAM permission <https://github.com/MacHu-GWU/cross_aws_account_iam_role-project/blob/main/example/use_iam_role_on_laptop.py>`_
 
 
 .. _install:
