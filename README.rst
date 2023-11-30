@@ -3,8 +3,8 @@
     :target: https://cross-aws-account-iam-role.readthedocs.io/en/latest/
     :alt: Documentation Status
 
-.. image:: https://github.com/MacHu-GWU/test_cross_aws_account_iam_role-project/workflows/CI/badge.svg
-    :target: https://github.com/MacHu-GWU/test_cross_aws_account_iam_role-project/actions?query=workflow:CI
+.. image:: https://github.com/MacHu-GWU/test_cross_aws_account_iam_role-project/workflows/test_cross_aws_account_iam_role/badge.svg
+    :target: https://github.com/MacHu-GWU/test_cross_aws_account_iam_role-project/actions?query=workflow:test_cross_aws_account_iam_role
 
 .. .. image:: https://codecov.io/gh/MacHu-GWU/cross_aws_account_iam_role-project/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/MacHu-GWU/cross_aws_account_iam_role-project
