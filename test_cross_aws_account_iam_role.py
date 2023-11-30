@@ -7,28 +7,35 @@ prefix = "a1b2-"
 
 bsm = BotoSesManager()
 
+grantee_1_bsm = bsm
 iam_role_arn = x_aws_acc.IamRoleArn(
-    account=bsm.aws_account_id,
+    account=grantee_1_bsm.aws_account_id,
     name="cross-aws-account-iam-role-github-open-id-connection",
 )
 grantee_1 = x_aws_acc.Grantee(
-    bsm=bsm,
-    stack_name=f"{prefix}-dev-cross-aws-account-iam-role-github-open-id-connection",
+    bsm=grantee_1_bsm,
+    stack_name=f"{prefix}cross-aws-account-iam-role-oidc-grantee",
     iam_arn=iam_role_arn,
-    policy_name=f"{prefix}-dev-cross_aws_account_iam_role_github_open_id_connection",
-    test_bsm=BotoSesManager(),
+    policy_name=f"{prefix}cross_aws_account_iam_role_github_oidc-grantee",
 )
 
-owner_1_bsm = BotoSesManager()
+owner_1_bsm = bsm
 owner_1 = x_aws_acc.Owner(
-    bsm=bsm,
-    stack_name=f"{prefix}-test-cross-aws-account-iam-role-github-open-id-connection",
-    role_name=f"{prefix}-test-cross_aws_account_iam_role_github_open_id_connection",
-    policy_name=f"{prefix}-test-cross_aws_account_iam_role_github_open_id_connection",
+    bsm=owner_1_bsm,
+    stack_name=f"{prefix}cross-aws-account-iam-role-github-oidc-test-owner",
+    role_name=f"{prefix}cross_aws_account_iam_role_github_oidc_test_owner",
+    policy_name=f"{prefix}cross_aws_account_iam_role_github_oidc_test_owner",
     policy_document={
         "Version": "2012-10-17",
         "Statement": [
-            {"Effect": "Allow", "Action": "sts:GetCallerIdentity", "Resource": "*"},
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "iam:ListAccountAliases",
+                    "sts:GetCallerIdentity",
+                ],
+                "Resource": "*",
+            },
         ],
     },
 )
@@ -44,8 +51,14 @@ def call_api(bsm: BotoSesManager):
     print(f"    now we are  using principal {arn}")
 
 
-x_aws_acc.validate(
-    grantee_list=[grantee_1],
-    call_api=call_api,
-    verbose=False,
-)
+def validate():
+    grantee_1.test_bsm = bsm
+    x_aws_acc.validate(
+        grantee_list=[grantee_1],
+        call_api=call_api,
+        verbose=False,
+    )
+
+
+if __name__ == "__main__":
+    validate()

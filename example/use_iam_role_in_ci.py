@@ -17,18 +17,17 @@ iam_role_arn = x_aws_acc.IamRoleArn(
 )
 grantee_1 = x_aws_acc.Grantee(
     bsm=grantee_1_bsm,
-    stack_name=f"{prefix}-dev-cross-aws-account-iam-role-github-open-id-connection",
+    stack_name=f"{prefix}cross-aws-account-iam-role-oidc-grantee",
     iam_arn=iam_role_arn,
-    policy_name=f"{prefix}-dev-cross_aws_account_iam_role_github_open_id_connection",
-    test_bsm=BotoSesManager(),
+    policy_name=f"{prefix}cross_aws_account_iam_role_github_oidc-grantee",
 )
 
 owner_1_bsm = BotoSesManager(profile_name="bmt_app_test_us_east_1")
 owner_1 = x_aws_acc.Owner(
     bsm=owner_1_bsm,
-    stack_name=f"{prefix}-test-cross-aws-account-iam-role-github-open-id-connection",
-    role_name=f"{prefix}-test-cross_aws_account_iam_role_github_open_id_connection",
-    policy_name=f"{prefix}-test-cross_aws_account_iam_role_github_open_id_connection",
+    stack_name=f"{prefix}cross-aws-account-iam-role-github-oidc-test-owner",
+    role_name=f"{prefix}cross_aws_account_iam_role_github_oidc_test_owner",
+    policy_name=f"{prefix}cross_aws_account_iam_role_github_oidc_test_owner",
     policy_document={
         "Version": "2012-10-17",
         "Statement": [
@@ -38,7 +37,7 @@ owner_1 = x_aws_acc.Owner(
                     "iam:ListAccountAliases",
                     "sts:GetCallerIdentity",
                 ],
-                "Resource": "*"
+                "Resource": "*",
             },
         ],
     },
@@ -46,12 +45,21 @@ owner_1 = x_aws_acc.Owner(
 
 owner_1.grant(grantee_1)
 
-x_aws_acc.deploy(
-    grantee_list=[grantee_1],
-    owner_list=[owner_1],
-)
 
-# x_aws_acc.delete(
-#     grantee_list=[grantee_1],
-#     owner_list=[owner_1],
-# )
+def deploy():
+    x_aws_acc.deploy(
+        grantee_list=[grantee_1],
+        owner_list=[owner_1],
+    )
+
+
+def delete():
+    x_aws_acc.delete(
+        grantee_list=[grantee_1],
+        owner_list=[owner_1],
+    )
+
+
+if __name__ == "__main__":
+    deploy()
+    # delete()
