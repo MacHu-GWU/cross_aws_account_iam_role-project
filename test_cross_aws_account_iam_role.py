@@ -47,4 +47,5 @@ def call_api(bsm: BotoSesManager):
 x_aws_acc.validate(
     grantee_list=[grantee_1],
     call_api=call_api,
+    verbose=False,
 )
