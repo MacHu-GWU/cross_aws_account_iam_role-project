@@ -403,10 +403,16 @@ def mask_aws_account_id(aws_account_id: str) -> str:
         >>> mask_aws_account_id("123456789012")
         '12*********12'
     """
-    return aws_account_id[4][:2] + "*" * 8 + aws_account_id[4][-2:]
+    return aws_account_id[:2] + "*" * 8 + aws_account_id[-2:]
 
 
 def mask_iam_principal_arn(arn: str) -> str:
+    """
+    Example:
+
+        >>> mask_iam_principal_arn("arn:aws:iam::123456789012:role/role-name")
+        'arn:aws:iam::12*********12:role/role-name'
+    """
     parts = arn.split(":")
     parts[4] = mask_aws_account_id(parts[4])
     masked_arn = ":".join(parts)
@@ -447,6 +453,7 @@ def print_account_info(
 def validate(
     grantee_list: T.List[Grantee],
     call_api: T.Callable,
+    masked_aws_account_id: bool = True,
     verbose: bool = True,
 ):
     """
@@ -462,14 +469,21 @@ def validate(
         print("Verify cross account assume role ...")
     for grantee in grantee_list:
         if verbose:
-            account_id, account_alias, arn = get_account_info(grantee.test_bsm)
+            account_id, account_alias, arn = get_account_info(
+                grantee.test_bsm,
+                masked_aws_account_id,
+            )
             print(
-                f"We are on grantee account {grantee.bsm.aws_account_id} ({account_alias}), "
+                f"We are on grantee account {account_id} ({account_alias}), "
                 f"using principal {arn}"
             )
         for owner in grantee._owners.values():
+            if masked_aws_account_id:
+                owner_role_arn = mask_iam_principal_arn(owner.role_arn)
+            else:
+                owner_role_arn = owner.role_arn
             if verbose:
-                print(f"  Try to assume role {owner.role_arn} on owner account ...")
+                print(f"  Try to assume role {owner_role_arn} on owner account ...")
             bsm_new = grantee.test_bsm.assume_role(role_arn=owner.role_arn)
             call_api(bsm_new)
 
