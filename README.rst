@@ -1,12 +1,12 @@
 
-.. image:: https://readthedocs.org/projects/cross-aws-account-iam-role/badge/?version=latest
+.. .. image:: https://readthedocs.org/projects/cross-aws-account-iam-role/badge/?version=latest
     :target: https://cross-aws-account-iam-role.readthedocs.io/en/latest/
     :alt: Documentation Status
 
-.. image:: https://github.com/MacHu-GWU/cross_aws_account_iam_role-project/workflows/CI/badge.svg
-    :target: https://github.com/MacHu-GWU/cross_aws_account_iam_role-project/actions?query=workflow:CI
+.. image:: https://github.com/MacHu-GWU/test_cross_aws_account_iam_role-project/workflows/CI/badge.svg
+    :target: https://github.com/MacHu-GWU/test_cross_aws_account_iam_role-project/actions?query=workflow:CI
 
-.. image:: https://codecov.io/gh/MacHu-GWU/cross_aws_account_iam_role-project/branch/main/graph/badge.svg
+.. .. image:: https://codecov.io/gh/MacHu-GWU/cross_aws_account_iam_role-project/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/MacHu-GWU/cross_aws_account_iam_role-project
 
 .. image:: https://img.shields.io/pypi/v/cross-aws-account-iam-role.svg
@@ -26,10 +26,10 @@
 
 ------
 
-.. image:: https://img.shields.io/badge/Link-Document-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-Document-blue.svg
     :target: https://cross-aws-account-iam-role.readthedocs.io/en/latest/
 
-.. image:: https://img.shields.io/badge/Link-API-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-API-blue.svg
     :target: https://cross-aws-account-iam-role.readthedocs.io/en/latest/py-modindex.html
 
 .. image:: https://img.shields.io/badge/Link-Install-blue.svg

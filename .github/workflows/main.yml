@@ -33,5 +33,5 @@ jobs:
           python-version: '3.9'
       - name: Test the current aws session
         run: |
-          pip install boto3
+          pip install -r requirements.txt
           python test_cross_aws_account_iam_role.py
