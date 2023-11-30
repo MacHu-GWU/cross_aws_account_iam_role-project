@@ -20,6 +20,23 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Configure AWS credentials for DEV
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.DEV_AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-github-open-id-connection
+          role-session-name: sample_role_session
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Test Cross Account IAM permission
+        run: |
+          python test_cross_aws_account_iam_role.py
+
 #      - name: Configure AWS credentials for DEV
 #        uses: aws-actions/configure-aws-credentials@v3
 #        with:
@@ -29,15 +46,15 @@ jobs:
 #      - name: Test IAM permission in DEV
 #        run: |
 #          aws sts get-caller-identity
-      - name: Configure AWS credentials for TEST
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.TEST_AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-oidc-test
-          role-session-name: sample_role_session
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Test IAM permission in TEST
-        run: |
-          aws sts get-caller-identity
+#      - name: Configure AWS credentials for TEST
+#        uses: aws-actions/configure-aws-credentials@v3
+#        with:
+#          role-to-assume: arn:aws:iam::${{ secrets.TEST_AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-oidc-test
+#          role-session-name: sample_role_session
+#          aws-region: ${{ env.AWS_REGION }}
+#      - name: Test IAM permission in TEST
+#        run: |
+#          aws sts get-caller-identity
 #      - name: Setup Python
 #        uses: actions/setup-python@v4
 #        with:
