@@ -20,15 +20,15 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
-      - name: Configure AWS credentials for DEV
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.DEV_AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-oidc-dev
-          role-session-name: sample_role_session
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Test IAM permission in DEV
-        run: |
-          aws sts get-caller-identity
+#      - name: Configure AWS credentials for DEV
+#        uses: aws-actions/configure-aws-credentials@v3
+#        with:
+#          role-to-assume: arn:aws:iam::${{ secrets.DEV_AWS_ACCOUNT_ID }}:role/cross-aws-account-iam-role-oidc-dev
+#          role-session-name: sample_role_session
+#          aws-region: ${{ env.AWS_REGION }}
+#      - name: Test IAM permission in DEV
+#        run: |
+#          aws sts get-caller-identity
       - name: Configure AWS credentials for TEST
         uses: aws-actions/configure-aws-credentials@v3
         with:
